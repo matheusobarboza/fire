@@ -90,6 +90,7 @@ function App() {
       });
   };
 
+  //Editar Post
   const editPost = async () => {
     await firebase
       .firestore()
@@ -110,6 +111,7 @@ function App() {
       });
   };
 
+  //Excluir Post
   const excluirPost = async (id) => {
     await firebase
       .firestore()
@@ -121,6 +123,7 @@ function App() {
       });
   };
 
+  //Cadastrar Usuário
   const cadastrarUser = async () => {
     await firebase
       .auth()
