@@ -11,6 +11,9 @@ function App() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
+  const [user, setUser] = useState(false);
+  const [userLogged, setUserLogged] = useState({});
+
   //Fica monitorando para executar ações
   useEffect(() => {
     const loadPosts = async () => {
@@ -24,7 +27,7 @@ function App() {
             meusPosts.push({
               id: item.id,
               titulo: item.data().titulo,
-              autor: item.data().autor
+              autor: item.data().autor,
             });
           });
 
@@ -35,6 +38,25 @@ function App() {
     loadPosts();
   }, []);
 
+  useEffect(() => {
+    const checkLogin = async () => {
+      await firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          setUser(true);
+          setUserLogged({
+            uid: user.uid,
+            email: user.email,
+          });
+        } else {
+          setUser(false);
+          setUserLogged({});
+        }
+      });
+    };
+
+    checkLogin();
+  }, []);
+
   //Adiciona um post
   const handleAdd = async () => {
     await firebase
@@ -42,7 +64,7 @@ function App() {
       .collection("posts")
       .add({
         titulo: title,
-        autor: author
+        autor: author,
       })
       .then(() => {
         console.log("Dados cadastrados com sucesso!");
@@ -79,7 +101,7 @@ function App() {
           lista.push({
             id: doc.id,
             titulo: doc.data().titulo,
-            autor: doc.data().autor
+            autor: doc.data().autor,
           });
         });
 
@@ -98,7 +120,7 @@ function App() {
       .doc(idPost)
       .update({
         titulo: title,
-        autor: author
+        autor: author,
       })
       .then(() => {
         console.log("Dados atualizados com sucesso!");
@@ -142,9 +164,37 @@ function App() {
       });
   };
 
+  const logout = async () => {
+    await firebase.auth().signOut();
+  };
+
+  const onLogin = async () => {
+    await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, senha)
+      .then((value) => {
+        console.log(value);
+        setEmail("");
+        setSenha("");
+      })
+      .catch((error) => {
+        console.log("Erro ao fazer login" + error);
+      });
+  };
+
   return (
     <div>
       <h1>React Js + Firebase</h1> <br />
+      {user && (
+        <div>
+          <strong>Seja Bem Vindo! (Você está logado!)</strong> <br/>
+          <span>
+            {userLogged.uid} - {userLogged.email}
+          </span>{" "}
+          <br />
+          <br /> <br />
+        </div>
+      )}
       <div className="container">
         <label>Email</label>
         <input
@@ -160,7 +210,9 @@ function App() {
           onChange={(e) => setSenha(e.target.value)}
         />
 
+        <button onClick={onLogin}>Login</button>
         <button onClick={cadastrarUser}>Cadastrar</button>
+        <button onClick={logout}>Sair</button>
       </div>
       <hr /> <br />
       <div className="container">
